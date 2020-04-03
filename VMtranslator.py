@@ -11,17 +11,19 @@ import fileinput
 FILE_PATH = '/Users/Elisabeth/Desktop/Compilers/VM_Translator/BasicTest.vm'
 
 COMMENT = '//'
+global_curr_inst = None
 
 class FileLine(object): 
     def checkIfLineIsComment(line):
         return line.startswith('//')
 
-    def findLineNumber(stringLookingFor): #function that searches for the string causing a problem and finds the line number it is on
+    def printError(stringLookingFor, error): #function that searches for the string causing a problem and finds the line number it is on
         with fileinput.input(files=(FILE_PATH)) as f:
             for line in f:
                 if stringLookingFor in line:
                             if not FileLine.checkIfLineIsComment(line):
-                                    print("Line: " + str(fileinput.lineno()) + " " + line)
+                                    print("ERROR:" + error + " - Line " + str(fileinput.lineno()) + ": " + line )
+
 
 # Create one per input file
 class Parser(object):
@@ -35,13 +37,15 @@ class Parser(object):
     #######
     ### API
     def advance(self):
-
+        global global_curr_inst
         self.curr_instruction = self.next_instruction
+        global_curr_inst = self.curr_instruction
         self.load_next_instruction()
 
     @property
     def has_more_commands(self):
         return bool(self.next_instruction)
+        
 
     @property
     def command_type(self):
@@ -67,7 +71,7 @@ class Parser(object):
         line = self.vm.readline().strip()
 
         while not self.is_instruction(line): ############### Line that check if its a recognized instruction
-            FileLine.findLineNumber(line)
+            FileLine.printError(line, "None")
             line = self.vm.readline().strip()
         self.load_next_instruction(line)
 
@@ -172,26 +176,82 @@ class CodeWriter(object):
             self.raise_unknown(operation)
         self.increment_SP()
 
+    def checkIfSegmentIsInRange(self, segment, index):
+        if(segment == 'temp'):
+            if(int(index)<5 or int(index)>12):
+                FileLine.printError(' '.join(global_curr_inst), "Temp index out of range")
+                return False
+            else:
+                return True
+        if(segment == 'static'):
+            if(int(index)<16 or int(index)>255):
+                FileLine.printError(' '.join(global_curr_inst), "Static index out of range")
+                return False
+            else:
+                return True
+        if(segment == 'pointer'):
+            if(int(index)!=1):
+                if(int(index)!=0):
+                    FileLine.printError(' '.join(global_curr_inst), "Pointer index out of range")
+                    return False
+                else:
+                    return True
+            else:
+                return True
+        else:
+            return True
+
+
+    def checkIfCorrectNumberOfElementsForCArithmetic(curr_line):
+        if(len(curr_line) != 1):
+            FileLine.printError(' '.join(curr_line),"Improperly Formatted")
+            return False
+        else:
+            return True
+
+    def checkIfCorrectNumberOfElementsForPushPop(curr_line):
+        if(len(curr_line) != 3):
+            FileLine.printError(' '.join(curr_line),"Improperly Formatted")
+            return False
+        else:
+            return True
+    
+    def checkIfKnownSegment(segment):
+        if(segment != 'argument'):
+            if(segment != 'local'):
+                if(segment != 'static'):
+                    if(segment != 'constant'):
+                        if(segment != 'this'):
+                            if(segment != 'that'):
+                                if(segment != 'pointer'):
+                                    if(segment != 'temp'):
+                                        FileLine.printError(str(' '.join(global_curr_inst)),"Unknown Memory segment")
+                                        return False
+        return True
+
+
+
     def write_push_pop(self, command, segment, index):
         self.resolve_address(segment, index)
         if command == 'C_PUSH': # load M[address] to D
-            if segment == 'constant':
+            if segment == 'constant': #all ranges of segment are allowed, so no range checking needed
                 self.write('D=A')
             else:
-                self.write('D=M')
+                if(self.checkIfSegmentIsInRange(segment, index) is True):
+                    self.write('D=M')
             self.push_D_to_stack()
         elif command == 'C_POP': # load D to M[address]
-            self.write('D=A')
-            self.write('@R13') # Store resolved address in R13
-            self.write('M=D')
-            self.pop_stack_to_D()
-            self.write('@R13')
-            self.write('A=M')
-            self.write('M=D')
+            if(CodeWriter.checkIfCorrectNumberOfElementsForPushPop(global_curr_inst) is True):
+                self.write('D=A')
+                self.write('@R13') # Store resolved address in R13
+                self.write('M=D')
+                self.pop_stack_to_D()
+                self.write('@R13')
+                self.write('A=M')
+                self.write('M=D')
         else:
-            print("Hit")
-
             self.raise_unknown(command)
+   
 
     def close(self):
         self.asm.close()
@@ -202,15 +262,17 @@ class CodeWriter(object):
         self.asm.write(command + '\n')
 
     def raise_unknown(self, argument):
-        print("Hit")
-        raise ValueError('{} is an invalid argument'.format(argument))
+        self.write("This is an unknown memory segment ")
+        FileLine.printError(str(' '.join(global_curr_inst)),"Unknown Memory segment")
 
     def check_for_negative_index(index):
-        if(str(index) < 0):
-            FileLine.findLineNumber(' '.join(parser.curr_instruction))
+        try:
+            if(int(index) < 0):
+                return True
+            else:
+                return False
+        except:
             return True
-        else:
-            return False
 
     def resolve_address(self, segment, index):
         
@@ -218,7 +280,7 @@ class CodeWriter(object):
         address = self.addresses.get(segment)
         if segment == 'constant':
             if (CodeWriter.check_for_negative_index(index) is True):
-                raise
+                FileLine.printError(' '.join(global_curr_inst), "illegal index")
             else:
                 self.write('@' + str(index))
         elif segment == 'static':
@@ -300,21 +362,22 @@ class Main(object):
             parser.advance()
             self.cw.write('// ' + ' '.join(parser.curr_instruction))
             if parser.command_type == 'C_PUSH':
-                
-                self.cw.write_push_pop('C_PUSH', parser.arg1, parser.arg2)
-                
+                if(CodeWriter.checkIfCorrectNumberOfElementsForPushPop(global_curr_inst) == True):
+                    self.cw.write_push_pop('C_PUSH', parser.arg1, parser.arg2)
+                else:
+                    self.cw.write("Incorrect number of elements")
             elif parser.command_type == 'C_POP':
-                try: 
+                if(CodeWriter.checkIfCorrectNumberOfElementsForPushPop(global_curr_inst) == True):
                     self.cw.write_push_pop('C_POP', parser.arg1, parser.arg2)
-                except:
-                    FileLine.findLineNumber(' '.join(parser.curr_instruction))
-            elif parser.command_type == 'C_ARITHMETIC':
-                try: 
+                else:
+                    self.cw.write("Incorrect number of elements")
+            elif parser.command_type == 'C_ARITHMETIC': 
+                if(CodeWriter.checkIfCorrectNumberOfElementsForCArithmetic(global_curr_inst) == True):
                     self.cw.write_arithmetic(parser.arg1)
-                except:
-                    FileLine.findLineNumber(' '.join(parser.curr_instruction))
+                else:
+                    self.cw.write("Incorrect number of elements")
             else:
-                FileLine.findLineNumber(' '.join(parser.curr_instruction)) #if not one of the recognized instructions, it must be some type of error
+                FileLine.printError(' '.join(parser.curr_instruction), "Unknown Command") #if not one of the recognized instructions, it must be some type of error
 
 
 if __name__ == '__main__':
