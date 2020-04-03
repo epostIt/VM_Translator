@@ -1,6 +1,0 @@
-function mult 2
-    push constant 0
-    pop local 0
-    push argument 1
-    pop local 1
-    add 2

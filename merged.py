@@ -8,7 +8,7 @@ kronovet@gmail.com
 import os
 import fileinput
 
-FILE_PATH = '/Users/Elisabeth/Desktop/Compilers/VM_Translator/BasicTest.vm'
+FILE_PATH = '/Users/Elisabeth/Desktop/Compilers/VM_Translator/FullTest.vm'
 
 COMMENT = '//'
 global_curr_inst = None
@@ -114,6 +114,7 @@ class Parser(object):
 
 
 class CodeWriter(object):
+    knownLabel = []
     '''Write .asm files
     Contract between methods:
     1. Contents of the A and D registries are not guaranteed,
@@ -218,14 +219,14 @@ class CodeWriter(object):
             return True
 
 
-    def checkIfCorrectNumberOfElementsForCArithmetic(curr_line):
+    def checkIfHasOneElement(curr_line):
         if(len(curr_line) != 1):
             FileLine.printError(' '.join(curr_line),"Improperly Formatted")
             return False
         else:
             return True
 
-    def checkIfCorrectNumberOfElementsForPushPop(curr_line):
+    def checkIfHasThreeElements(curr_line):
         if(len(curr_line) != 3):
             FileLine.printError(' '.join(curr_line),"Improperly Formatted")
             return False
@@ -246,6 +247,12 @@ class CodeWriter(object):
         return True
 
 
+    def checkIfHasTwoElements(curr_line):
+        if(len(curr_line) != 2):
+            FileLine.printError(' '.join(curr_line),"Improperly Formatted")
+            return False
+        else:
+            return True
 
     def write_push_pop(self, command, segment, index):
         self.resolve_address(segment, index)
@@ -257,7 +264,7 @@ class CodeWriter(object):
                     self.write('D=M')
             self.push_D_to_stack()
         elif command == 'C_POP': # load D to M[address]
-            if(CodeWriter.checkIfCorrectNumberOfElementsForPushPop(global_curr_inst) is True):
+            if(CodeWriter.checkIfHasThreeElements(global_curr_inst) is True):
                 self.write('D=A')
                 self.write('@R13') # Store resolved address in R13
                 self.write('M=D')
@@ -268,18 +275,29 @@ class CodeWriter(object):
         else:
             self.raise_unknown(command)
    
-
     def write_label(self, label):
         self.write('({}${})'.format(self.curr_file, label), code=False)
+        CodeWriter.knownLabel.append(label)
+        
 
     def write_goto(self, label):
-        self.write('@{}${}'.format(self.curr_file, label))
-        self.write('0;JMP')
+        if (label in CodeWriter.knownLabel):
+            self.write('@{}${}'.format(self.curr_file, label))
+            self.write('0;JMP')
+        else:
+            FileLine.printError(str(' '.join(global_curr_inst)),"Unresolved label")
+
+        
 
     def write_if(self, label):
-        self.pop_stack_to_D()
-        self.write('@{}${}'.format(self.curr_file, label))
-        self.write('D;JNE')
+        if (label in CodeWriter.knownLabel):
+            self.pop_stack_to_D()
+            self.write('@{}${}'.format(self.curr_file, label))
+            self.write('D;JNE')
+        else:
+            FileLine.printError(str(' '.join(global_curr_inst)),"Unresolved label")
+
+        
 
     def write_function(self, function_name, num_locals):
         # (f)
@@ -497,32 +515,50 @@ class Main(object):
             parser.advance()
             self.cw.write('// ' + ' '.join(parser.curr_instruction), code=False)
             if parser.command_type == 'C_PUSH':
-                if(CodeWriter.checkIfCorrectNumberOfElementsForPushPop(global_curr_inst) == True):
+                if(CodeWriter.checkIfHasThreeElements(global_curr_inst) == True):
                     self.cw.write_push_pop('C_PUSH', parser.arg1, parser.arg2)
                 else:
-                    self.cw.write("Incorrect number of elements")
+                    self.cw.write("Command improperly formatted")
             elif parser.command_type == 'C_POP':
-                if(CodeWriter.checkIfCorrectNumberOfElementsForPushPop(global_curr_inst) == True):
+                if(CodeWriter.checkIfHasThreeElements(global_curr_inst) == True):
                     self.cw.write_push_pop('C_POP', parser.arg1, parser.arg2)
                 else:
-                    self.cw.write("Incorrect number of elements")
+                    self.cw.write("Command improperly formatted")
             elif parser.command_type == 'C_ARITHMETIC': 
-                if(CodeWriter.checkIfCorrectNumberOfElementsForCArithmetic(global_curr_inst) == True):
+                if(CodeWriter.checkIfHasOneElement(global_curr_inst) == True):
                     self.cw.write_arithmetic(parser.arg1)
                 else:
-                    self.cw.write("Incorrect number of elements")
+                    self.cw.write("Command improperly formatted")
             elif parser.command_type == 'C_LABEL':
-                self.cw.write_label(parser.arg1)
+                if(CodeWriter.checkIfHasTwoElements(global_curr_inst) == True):
+                    self.cw.write_label(parser.arg1)
+                else:
+                    self.cw.write("Command improperly formatted")
             elif parser.command_type == 'C_GOTO':
-                self.cw.write_goto(parser.arg1)
+                if(CodeWriter.checkIfHasTwoElements(global_curr_inst) == True):
+                    self.cw.write_goto(parser.arg1)
+                else:
+                    self.cw.write("Command improperly formatted")
             elif parser.command_type == 'C_IF':
-                self.cw.write_if(parser.arg1)
+                if(CodeWriter.checkIfHasTwoElements(global_curr_inst) == True):
+                    self.cw.write_if(parser.arg1)
+                else:
+                    self.cw.write("Command improperly formatted")
             elif parser.command_type == 'C_FUNCTION':
-                self.cw.write_function(parser.arg1, int(parser.arg2))
+                if(CodeWriter.checkIfHasThreeElements(global_curr_inst) == True):
+                    self.cw.write_function(parser.arg1, int(parser.arg2))
+                else:
+                    self.cw.write("Command improperly formatted")
             elif parser.command_type == 'C_CALL':
-                self.cw.write_call(parser.arg1, int(parser.arg2))
+                if(CodeWriter.checkIfHasThreeElements(global_curr_inst) == True):
+                    self.cw.write_call(parser.arg1, int(parser.arg2))
+                else:
+                    self.cw.write("Command improperly formatted")
             elif parser.command_type == 'C_RETURN':
-                self.cw.write_return()
+                if(CodeWriter.checkIfHasOneElement(global_curr_inst) == True):
+                    self.cw.write_return()
+                else:
+                    self.cw.write("Command improperly formatted")
             else:
                 FileLine.printError(' '.join(parser.curr_instruction), "Unknown Command") #if not one of the recognized instructions, it must be some type of error
         parser.close()
