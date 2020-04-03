@@ -18,11 +18,12 @@ class FileLine(object):
         return line.startswith('//')
 
     def printError(stringLookingFor, error): #function that searches for the string causing a problem and finds the line number it is on
+        stringLookingFor = stringLookingFor + "\n"
         with fileinput.input(files=(FILE_PATH)) as f:
             for line in f:
-                if stringLookingFor in line:
-                            if not FileLine.checkIfLineIsComment(line):
-                                    print("ERROR:" + error + " - Line " + str(fileinput.lineno()) + ": " + line )
+                if (stringLookingFor == line):
+                    if not FileLine.checkIfLineIsComment(line):
+                        print("ERROR:" + error + " - Line " + str(fileinput.lineno()) + ": " + line )
 
 
 # Create one per input file
