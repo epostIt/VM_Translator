@@ -1,5 +1,5 @@
 function mult 
-push constant 0
+push constant -10
 pop local
 push argument 1
 pop local 1
