@@ -196,13 +196,13 @@ class CodeWriter(object):
 
     def checkIfSegmentIsInRange(self, segment, index):
         if(segment == 'temp'):
-            if(int(index)<5 or int(index)>12):
+            if(int(index) > 7 or int(index)<0):
                 FileLine.printError(' '.join(global_curr_inst), "Temp index out of range")
                 return False
             else:
                 return True
         if(segment == 'static'):
-            if(int(index)<16 or int(index)>255):
+            if(check_for_negative_index(index) == True):
                 FileLine.printError(' '.join(global_curr_inst), "Static index out of range")
                 return False
             else:
@@ -255,11 +255,37 @@ class CodeWriter(object):
         else:
             return True
 
+    def checkIfFifteenBitUnsignedInt(index):
+        if(int(index) > 32768 or int(index) < 0):
+            FileLine.printError(' '.join(global_curr_inst),"Index out of range")
+            return False
+        else:
+            return True
+
+    def checkIfValidFunctionOrLabelName(line):
+        name = line[1]
+        if(name[0].isdigit()):
+            FileLine.printError(' '.join(global_curr_inst),"Invalid function name")
+            return False
+        else:
+            return True
+    
+    def checkCount():
+        count = int(global_curr_inst[2])
+        if(count < 0):
+            FileLine.printError(' '.join(global_curr_inst),"Illegal count")
+            return False
+        else:
+            return True
+
     def write_push_pop(self, command, segment, index):
         self.resolve_address(segment, index)
         if command == 'C_PUSH': # load M[address] to D
             if segment == 'constant': #all ranges of segment are allowed, so no range checking needed
-                self.write('D=A')
+                if(CodeWriter.checkIfFifteenBitUnsignedInt(index) is True):
+                    self.write('D=A')
+                else:
+                    self.write("Index out of range for this instruction")
             else:
                 if(self.checkIfSegmentIsInRange(segment, index) is True):
                     self.write('D=M')
@@ -431,12 +457,9 @@ class CodeWriter(object):
     def resolve_address(self, segment, index):
         
         '''Resolve address to A register'''
-        address = self.addresses.get(segment)
+        address = str(self.addresses.get(segment)) #####################Cast this to a string, not sure if thats right
         if segment == 'constant':
-            if (CodeWriter.check_for_negative_index(index) is True):
-                FileLine.printError(' '.join(global_curr_inst), "illegal index")
-            else:
-                self.write('@' + str(index))
+            self.write('@' + str(index))
         elif segment == 'static':
             self.write('@' + self.curr_file + '.' + str(index))
         elif segment in ['pointer', 'temp']:
@@ -532,27 +555,48 @@ class Main(object):
                     self.cw.write("Command improperly formatted")
             elif parser.command_type == 'C_LABEL':
                 if(CodeWriter.checkIfHasTwoElements(global_curr_inst) == True):
-                    self.cw.write_label(parser.arg1)
+                    if(CodeWriter.checkIfValidFunctionOrLabelName(global_curr_inst) == True):
+                        self.cw.write_label(parser.arg1)
+                    else:
+                        self.cw.write("Invalid label name")
                 else:
                     self.cw.write("Command improperly formatted")
             elif parser.command_type == 'C_GOTO':
                 if(CodeWriter.checkIfHasTwoElements(global_curr_inst) == True):
-                    self.cw.write_goto(parser.arg1)
+                    if(CodeWriter.checkIfValidFunctionOrLabelName(global_curr_inst) == True):
+                        self.cw.write_goto(parser.arg1)
+                    else:
+                        self.cw.write("Invalid label call")
                 else:
                     self.cw.write("Command improperly formatted")
             elif parser.command_type == 'C_IF':
                 if(CodeWriter.checkIfHasTwoElements(global_curr_inst) == True):
-                    self.cw.write_if(parser.arg1)
+                    if(CodeWriter.checkIfValidFunctionOrLabelName(global_curr_inst) == True):
+                        self.cw.write_if(parser.arg1)
+                    else:
+                        self.cw.write("Invalid label call")
                 else:
                     self.cw.write("Command improperly formatted")
             elif parser.command_type == 'C_FUNCTION':
                 if(CodeWriter.checkIfHasThreeElements(global_curr_inst) == True):
-                    self.cw.write_function(parser.arg1, int(parser.arg2))
+                    if(CodeWriter.checkIfValidFunctionOrLabelName(global_curr_inst) == True):
+                        if(CodeWriter.checkCount() ==  True):
+                            self.cw.write_function(parser.arg1, int(parser.arg2))
+                        else:
+                            self.cw.write("Non-negative number was used")
+                    else:
+                        self.cw.write("Invalid function name")
                 else:
                     self.cw.write("Command improperly formatted")
             elif parser.command_type == 'C_CALL':
                 if(CodeWriter.checkIfHasThreeElements(global_curr_inst) == True):
-                    self.cw.write_call(parser.arg1, int(parser.arg2))
+                    if(CodeWriter.checkIfValidFunctionOrLabelName(global_curr_inst) == True):
+                        if(CodeWriter.checkCount() ==  True):
+                            self.cw.write_call(parser.arg1, int(parser.arg2))
+                        else:
+                            self.cw.write("Non-negative number was used")
+                    else:
+                        self.cw.write("Invalid function name")
                 else:
                     self.cw.write("Command improperly formatted")
             elif parser.command_type == 'C_RETURN':
