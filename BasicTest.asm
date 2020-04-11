@@ -52,25 +52,13 @@ M=D // 46
 // BasicTest
 // bool
 @SP // 49
-M=M-1 // 50
-A=M // 51
-D=M // 52
-@SP // 53
-M=M-1 // 54
-@SP // 55
-A=M // 56
-D=M-D // 57
-@BOOL0 // 58
-D;JEQ // 59
-@SP // 60
-A=M // 61
-M=0 // 62
-@ENDBOOL0 // 63
-0;JMP // 64
-(BOOL0)
-@SP // 65
-A=M // 66
-M=-1 // 67
+AM=M-1 // 50
+D=M // 51
+@ENDBOOL0 // 52
+D;JEQ // 53
+@SP // 54
+A=M // 55
+M=-1 // 56
 (ENDBOOL0)
-@SP // 68
-M=M+1 // 69
+@SP // 57
+M=M+1 // 58

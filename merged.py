@@ -104,7 +104,7 @@ class Parser(object):
              'le': 'C_ARITHMETIC',
              'ge': 'C_ARITHMETIC',
              'ne': 'C_ARITHMETIC',
-             'bool': 'C_ARITHMETIC',
+             'bool': 'C_BOOLEAN',
             'and': 'C_ARITHMETIC',
              'or': 'C_ARITHMETIC',
             'not': 'C_ARITHMETIC',
@@ -152,6 +152,21 @@ class CodeWriter(object):
         # self.curr_file = vm_filename.replace('.vm', '')
         self.write('//////', code=False)
         self.write('// {}'.format(self.curr_file), code=False)
+
+    def writeBoolean(self, operation):
+        self.write('@SP')
+        self.write('AM=M-1')
+        self.write('D=M')
+        self.write('@ENDBOOL{}'.format(self.bool_count))
+        self.write('D;JEQ')
+        self.write('@SP')
+        self.write('A=M')
+        self.write('M=-1')
+        self.write('(ENDBOOL{})'.format(self.bool_count), code=False)
+        self.increment_SP()
+        self.bool_count += 1
+
+
 
     def write_arithmetic(self, operation):
         '''Apply operation to top of stack'''
@@ -578,6 +593,11 @@ class Main(object):
             elif parser.command_type == 'C_ARITHMETIC': 
                 if(CodeWriter.checkIfHasOneElement(global_curr_inst) == True):
                     self.cw.write_arithmetic(parser.arg1)
+                else:
+                    self.cw.write("Command improperly formatted")
+            elif parser.command_type == 'C_BOOLEAN':
+                if(CodeWriter.checkIfHasOneElement(global_curr_inst) == True):
+                    self.cw.writeBoolean(parser.arg1)
                 else:
                     self.cw.write("Command improperly formatted")
             elif parser.command_type == 'C_LABEL':
