@@ -1,64 +1,20 @@
-@256 // 0
-D=A // 1
-@SP // 2
-M=D // 3
-@Sys.initRET0 // 4
-D=A // 5
-@SP // 6
-A=M // 7
-M=D // 8
-@SP // 9
-M=M+1 // 10
-@LCL // 11
-D=M // 12
-@SP // 13
-A=M // 14
-M=D // 15
-@SP // 16
-M=M+1 // 17
-@ARG // 18
-D=M // 19
-@SP // 20
-A=M // 21
-M=D // 22
-@SP // 23
-M=M+1 // 24
-@THIS // 25
-D=M // 26
-@SP // 27
-A=M // 28
-M=D // 29
-@SP // 30
-M=M+1 // 31
-@THAT // 32
-D=M // 33
-@SP // 34
-A=M // 35
-M=D // 36
-@SP // 37
-M=M+1 // 38
-@SP // 39
-D=M // 40
-@LCL // 41
-M=D // 42
-@5 // 43
-D=D-A // 44
-@ARG // 45
-M=D // 46
-@Sys.init // 47
-0;JMP // 48
-(Sys.initRET0)
 //////
 // BasicTest
-// bool
-@SP // 49
-AM=M-1 // 50
-D=M // 51
-@ENDBOOL0 // 52
-D;JEQ // 53
-@SP // 54
-A=M // 55
-M=-1 // 56
+// l-not
+@SP // 0
+AM=M-1 // 1
+D=M // 2
+@ENDBOOL0 // 3
+D;JEQ // 4
+@SP // 5
+A=M // 6
+M=0 // 7
+@ENDSTATEMENT0 // 8
+0;JMP // 9
 (ENDBOOL0)
-@SP // 57
-M=M+1 // 58
+@SP // 10
+A=M // 11
+M=-1 // 12
+(ENDSTATEMENT0)
+@SP // 13
+M=M+1 // 14

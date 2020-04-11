@@ -9,7 +9,7 @@ kronovet@gmail.com
 import os
 import fileinput
 
-FILE_PATH = '/Users/susanpost/Desktop/VM_Translator/BasicTest.vm'
+FILE_PATH = '/Users/Elisabeth/Desktop/Compilers/VM_Translator/BasicTest.vm'
 
 COMMENT = '//'
 global_curr_inst = None
@@ -105,6 +105,7 @@ class Parser(object):
              'ge': 'C_ARITHMETIC',
              'ne': 'C_ARITHMETIC',
              'bool': 'C_BOOLEAN',
+             'l-not': 'C_LOGICALNOT',
             'and': 'C_ARITHMETIC',
              'or': 'C_ARITHMETIC',
             'not': 'C_ARITHMETIC',
@@ -166,7 +167,24 @@ class CodeWriter(object):
         self.increment_SP()
         self.bool_count += 1
 
-
+    def writeLogicalNot(self, operation):
+        self.write('@SP')
+        self.write('AM=M-1')
+        self.write('D=M')
+        self.write('@ENDBOOL{}'.format(self.bool_count))
+        self.write('D;JEQ')
+        self.write('@SP')
+        self.write('A=M')
+        self.write('M=0') #if false
+        self.write('@ENDSTATEMENT{}'.format(self.bool_count))
+        self.write('0;JMP')
+        self.write('(ENDBOOL{})'.format(self.bool_count), code=False) #if true
+        self.write('@SP')
+        self.write('A=M')
+        self.write('M=-1')
+        self.write('(ENDSTATEMENT{})'.format(self.bool_count), code=False)
+        self.increment_SP()
+        self.bool_count += 1
 
     def write_arithmetic(self, operation):
         '''Apply operation to top of stack'''
@@ -556,7 +574,7 @@ class Main(object):
     def __init__(self, FILE_PATH):
         self.parse_files(FILE_PATH)
         self.cw = CodeWriter(self.asm_file)
-        self.cw.write_init()
+        # self.cw.write_init()
         for vm_file in self.vm_files:
             self.translate(vm_file)
         self.cw.close()
@@ -593,6 +611,11 @@ class Main(object):
             elif parser.command_type == 'C_ARITHMETIC': 
                 if(CodeWriter.checkIfHasOneElement(global_curr_inst) == True):
                     self.cw.write_arithmetic(parser.arg1)
+                else:
+                    self.cw.write("Command improperly formatted")
+            elif parser.command_type == 'C_LOGICALNOT':
+                if(CodeWriter.checkIfHasOneElement(global_curr_inst) == True):
+                    self.cw.writeLogicalNot(parser.arg1)
                 else:
                     self.cw.write("Command improperly formatted")
             elif parser.command_type == 'C_BOOLEAN':
