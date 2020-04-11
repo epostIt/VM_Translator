@@ -8,7 +8,7 @@ kronovet@gmail.com
 import os
 import fileinput
 
-FILE_PATH = '/Users/Elisabeth/Desktop/Compilers/VM_Translator/FullTest.vm'
+FILE_PATH = '/Users/Elisabeth/Desktop/Compilers/VM_Translator/BasicTest.vm'
 
 COMMENT = '//'
 global_curr_inst = None
@@ -170,7 +170,7 @@ class CodeWriter(object):
         elif operation in ['eq', 'gt', 'lt']: # Boolean operators
             self.write('D=M-D')
             self.write('@BOOL{}'.format(self.bool_count))
-
+##################### DO NOT PUT BOOL STATMENT HERE, WE DO NOT WANT THE D=M-D
             if operation == 'eq':
                 self.write('D;JEQ') # if x == y, x - y == 0
             elif operation == 'gt':
@@ -292,13 +292,16 @@ class CodeWriter(object):
             self.push_D_to_stack()
         elif command == 'C_POP': # load D to M[address]
             if(CodeWriter.checkIfHasThreeElements(global_curr_inst) is True):
-                self.write('D=A')
-                self.write('@R13') # Store resolved address in R13
-                self.write('M=D')
-                self.pop_stack_to_D()
-                self.write('@R13')
-                self.write('A=M')
-                self.write('M=D')
+                if(segment != 'constant'):
+                    self.write('D=A')
+                    self.write('@R13') # Store resolved address in R13
+                    self.write('M=D')
+                    self.pop_stack_to_D()
+                    self.write('@R13')
+                    self.write('A=M')
+                    self.write('M=D')
+                elif(segment == 'constant'):
+                    self.decrement_SP()
         else:
             self.raise_unknown(command)
    
@@ -459,6 +462,8 @@ class CodeWriter(object):
         '''Resolve address to A register'''
         address = str(self.addresses.get(segment)) #####################Cast this to a string, not sure if thats right
         if segment == 'constant':
+            self.write('@' + str(index))
+        elif segment in ['ram', 'RAM']:
             self.write('@' + str(index))
         elif segment == 'static':
             self.write('@' + self.curr_file + '.' + str(index))

@@ -1,0 +1,4 @@
+pop constant 10
+push ram 10
+pop temp 6
+pop ram 10
