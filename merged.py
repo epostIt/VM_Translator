@@ -4,11 +4,12 @@ VM Translator
 Daniel Kronovet
 kronovet@gmail.com
 '''
+#small change
 
 import os
 import fileinput
 
-FILE_PATH = '/Users/Elisabeth/Desktop/Compilers/VM_Translator/BasicTest.vm'
+FILE_PATH = '/Users/susanpost/Desktop/VM_Translator/BasicTest.vm'
 
 COMMENT = '//'
 global_curr_inst = None
