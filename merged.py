@@ -100,6 +100,9 @@ class Parser(object):
              'eq': 'C_ARITHMETIC',
              'gt': 'C_ARITHMETIC',
              'lt': 'C_ARITHMETIC',
+             'le': 'C_ARITHMETIC',
+             'ge': 'C_ARITHMETIC',
+             'ne': 'C_ARITHMETIC',
             'and': 'C_ARITHMETIC',
              'or': 'C_ARITHMETIC',
             'not': 'C_ARITHMETIC',
@@ -167,7 +170,7 @@ class CodeWriter(object):
             self.write('M=-M')
         elif operation == 'not':
             self.write('M=!M')
-        elif operation in ['eq', 'gt', 'lt']: # Boolean operators
+        elif operation in ['eq', 'gt', 'lt', 'le', 'ge', 'ne']: # Boolean operators
             self.write('D=M-D')
             self.write('@BOOL{}'.format(self.bool_count))
 ##################### DO NOT PUT BOOL STATMENT HERE, WE DO NOT WANT THE D=M-D
@@ -177,6 +180,12 @@ class CodeWriter(object):
                 self.write('D;JGT') # if x > y, x - y > 0
             elif operation == 'lt':
                 self.write('D;JLT') # if x < y, x - y < 0
+            elif operation == 'le':
+                self.write('D;JLE')
+            elif operation == 'ge':
+                self.write('D;JGE')
+            elif operation == 'ne':
+                self.write('D;JNE')
 
             self.set_A_to_stack()
             self.write('M=0') # False
