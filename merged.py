@@ -108,6 +108,7 @@ class Parser(object):
              'l-not': 'C_LOGICALNOT',
              'l-and': 'C_LOGICALAND',
              'l-or': 'C_LOGICALOR',
+             'l-xor': 'C_LOGICALXOR',
             'and': 'C_ARITHMETIC',
              'or': 'C_ARITHMETIC',
             'not': 'C_ARITHMETIC',
@@ -204,23 +205,32 @@ class CodeWriter(object):
     def writeLogicalXOR(self, operation):
         self.write('@SP')
         self.write('AM=M-1') #decrement sp
+        self.write('D=M') #grab first value
+        self.write('@LXOR_SECOND_FALSE{}'.format(self.bool_count))
+        self.write('D;JNE') #if the first value is true (non-zero), jump to second value
+        
+        self.write('@SP') #otherwise check next value
+        self.write('A=M-1')
         self.write('D=M')
-        self.write('@LOR_NEXT{}'.format(self.bool_count))
-        self.write('D;JEQ') #if the first value is 0 (false), jump to second value
-        self.write('@LOR_CONT{}'.format(self.bool_count)) 
-        self.write('0;JMP') #jump to continue
-        self.write('(LOR_NEXT{})'.format(self.bool_count), code=False)
+        self.write('@LXOR_FALSE{}'.format(self.bool_count))
+        self.write('D;JEQ') #if the second value also false, jump to lor_false
+        self.write('@LXOR_CONT{}'.format(self.bool_count))
+        self.write('0;JMP') #and jump to continue
+
+        self.write('(LXOR_SECOND_FALSE{})'.format(self.bool_count), code=False)
         self.write('@SP') #check next value
         self.write('A=M-1')
         self.write('D=M')
-        self.write('@LOR_FALSE{}'.format(self.bool_count))
-        self.write('D;JEQ') #if the second value false, jump to lor_false
-        self.pushTrueOnStack() #second is true, so store true on stack
-        self.write('@LOR_CONT{}'.format(self.bool_count))
-        self.write('0;JMP') #skip storing false on the stack, jump to land_cont
-        self.write('(LOR_FALSE{})'.format(self.bool_count), code=False)
+        self.write('@LXOR_FALSE{}'.format(self.bool_count))
+        self.write('D;JNE') #if the second value TRUE, jump to lor_false
+        
+        self.pushTrueOnStack() #otherwise, push true on stack and jump to continue
+        self.write('@LXOR_CONT{}'.format(self.bool_count))
+        self.write('0;JMP') 
+
+        self.write('(LXOR_FALSE{})'.format(self.bool_count), code=False)
         self.pushFalseOnStack()
-        self.write('(LOR_CONT{})'.format(self.bool_count), code=False)
+        self.write('(LXOR_CONT{})'.format(self.bool_count), code=False)
         self.increment_SP()
 
 
@@ -702,6 +712,11 @@ class Main(object):
             elif parser.command_type == 'C_LOGICALOR':
                 if(CodeWriter.checkIfHasOneElement(global_curr_inst) == True):
                     self.cw.writeLogicalOr(parser.arg1)
+                else:
+                    self.cw.write("Command improperly formatted")
+            elif parser.command_type == 'C_LOGICALXOR':
+                if(CodeWriter.checkIfHasOneElement(global_curr_inst) == True):
+                    self.cw.writeLogicalXOR(parser.arg1)
                 else:
                     self.cw.write("Command improperly formatted")
             elif parser.command_type == 'C_BOOLEAN':
