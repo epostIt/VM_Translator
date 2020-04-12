@@ -9,7 +9,7 @@ kronovet@gmail.com
 import os
 import fileinput
 
-FILE_PATH = '/Users/Elisabeth/Desktop/Compilers/VM_Translator/BasicTest.vm'
+FILE_PATH = '/Users/susanpost/Desktop/MY_VM_Translator/BasicTest.vm'
 
 COMMENT = '//'
 global_curr_inst = None
@@ -106,6 +106,7 @@ class Parser(object):
              'ne': 'C_ARITHMETIC',
              'bool': 'C_BOOLEAN',
              'l-not': 'C_LOGICALNOT',
+             'l-and': 'C_LOGICALAND',
             'and': 'C_ARITHMETIC',
              'or': 'C_ARITHMETIC',
             'not': 'C_ARITHMETIC',
@@ -186,6 +187,28 @@ class CodeWriter(object):
         self.increment_SP()
         self.bool_count += 1
 
+    def writeLogicalAnd(self, operation):
+        self.write('@SP')
+        self.write('AM=M-1')
+        self.write('D=M')
+        self.write('@LAND_FALSE{}'.format(self.bool_count))
+        self.write('D;JEQ')
+        self.write('@SP')
+        self.write('A=M-1')
+        self.write('D=M')
+        self.write('@LAND_FALSE{}'.format(self.bool_count))
+        self.write('D;JEQ')
+        self.write('@SP')
+        self.write('AM=M-1')
+        self.write('M=-1')
+        self.write('@LAND_CONT{}'.format(self.bool_count))
+        self.write('0;JMP')
+        self.write('(LAND_FALSE{})'.format(self.bool_count), code=False)
+        self.write('@SP')
+        self.write('A=M')
+        self.write('M=0')
+        self.write('(LAND_CONT{})'.format(self.bool_count), code=False)
+        self.increment_SP()
     def write_arithmetic(self, operation):
         '''Apply operation to top of stack'''
         if operation not in ['neg', 'not']: # Binary operator
@@ -211,8 +234,6 @@ class CodeWriter(object):
 ##################### DO NOT PUT BOOL STATMENT HERE, WE DO NOT WANT THE D=M-D
             if operation == 'eq':
                 self.write('D;JEQ') # if x == y, x - y == 0
-            elif operation == 'bool':
-                self.write('D;JEQ')
             elif operation == 'gt':
                 self.write('D;JGT') # if x > y, x - y > 0
             elif operation == 'lt':
@@ -616,6 +637,11 @@ class Main(object):
             elif parser.command_type == 'C_LOGICALNOT':
                 if(CodeWriter.checkIfHasOneElement(global_curr_inst) == True):
                     self.cw.writeLogicalNot(parser.arg1)
+                else:
+                    self.cw.write("Command improperly formatted")
+            elif parser.command_type == 'C_LOGICALAND':
+                if(CodeWriter.checkIfHasOneElement(global_curr_inst) == True):
+                    self.cw.writeLogicalAnd(parser.arg1)
                 else:
                     self.cw.write("Command improperly formatted")
             elif parser.command_type == 'C_BOOLEAN':
