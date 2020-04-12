@@ -201,6 +201,28 @@ class CodeWriter(object):
         self.write('(LAND_CONT{})'.format(self.bool_count), code=False)
         self.increment_SP()
 
+    def writeLogicalXOR(self, operation):
+        self.write('@SP')
+        self.write('AM=M-1') #decrement sp
+        self.write('D=M')
+        self.write('@LOR_NEXT{}'.format(self.bool_count))
+        self.write('D;JEQ') #if the first value is 0 (false), jump to second value
+        self.write('@LOR_CONT{}'.format(self.bool_count)) 
+        self.write('0;JMP') #jump to continue
+        self.write('(LOR_NEXT{})'.format(self.bool_count), code=False)
+        self.write('@SP') #check next value
+        self.write('A=M-1')
+        self.write('D=M')
+        self.write('@LOR_FALSE{}'.format(self.bool_count))
+        self.write('D;JEQ') #if the second value false, jump to lor_false
+        self.pushTrueOnStack() #second is true, so store true on stack
+        self.write('@LOR_CONT{}'.format(self.bool_count))
+        self.write('0;JMP') #skip storing false on the stack, jump to land_cont
+        self.write('(LOR_FALSE{})'.format(self.bool_count), code=False)
+        self.pushFalseOnStack()
+        self.write('(LOR_CONT{})'.format(self.bool_count), code=False)
+        self.increment_SP()
+
 
     def writeLogicalOr(self, operation):
         self.write('@SP')
@@ -377,13 +399,24 @@ class CodeWriter(object):
                     self.write('D=A')
                 else:
                     self.write("Index out of range for this instruction")
+            elif segment == 'ram':
+                self.write('@' + str(index))
+                self.write('D=M')
             else:
                 if(self.checkIfSegmentIsInRange(segment, index) is True):
                     self.write('D=M')
             self.push_D_to_stack()
         elif command == 'C_POP': # load D to M[address]
             if(CodeWriter.checkIfHasThreeElements(global_curr_inst) is True):
-                if(segment != 'constant'):
+                if(segment == 'constant'):
+                    self.decrement_SP()
+                elif(segment == 'ram'):
+                    self.write('@SP')
+                    self.write('AM=M-1')
+                    self.write('D=M')
+                    self.write('@' + str(index))
+                    self.write('M=D')
+                else:
                     self.write('D=A')
                     self.write('@R13') # Store resolved address in R13
                     self.write('M=D')
@@ -391,8 +424,7 @@ class CodeWriter(object):
                     self.write('@R13')
                     self.write('A=M')
                     self.write('M=D')
-                elif(segment == 'constant'):
-                    self.decrement_SP()
+                
         else:
             self.raise_unknown(command)
    
@@ -554,8 +586,6 @@ class CodeWriter(object):
         address = str(self.addresses.get(segment)) #####################Cast this to a string, not sure if thats right
         if segment == 'constant':
             self.write('@' + str(index))
-        elif segment in ['ram', 'RAM']:
-            self.write('@' + str(index))
         elif segment == 'static':
             self.write('@' + self.curr_file + '.' + str(index))
         elif segment in ['pointer', 'temp']:
@@ -565,7 +595,7 @@ class CodeWriter(object):
             self.write('D=M')
             self.write('@' + str(index))
             self.write('A=D+A') # D is segment base
-        else:
+        elif(segment != 'ram'):
             self.raise_unknown(segment)
 
     def address_dict(self):
