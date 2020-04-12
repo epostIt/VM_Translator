@@ -9,7 +9,7 @@ kronovet@gmail.com
 import os
 import fileinput
 
-FILE_PATH = '/Users/susanpost/Desktop/MY_VM_Translator/BasicTest.vm'
+FILE_PATH = '/Users/Elisabeth/Desktop/Compilers/VM_Translator/BasicTest.vm'
 
 COMMENT = '//'
 global_curr_inst = None
@@ -107,6 +107,7 @@ class Parser(object):
              'bool': 'C_BOOLEAN',
              'l-not': 'C_LOGICALNOT',
              'l-and': 'C_LOGICALAND',
+             'l-or': 'C_LOGICALOR',
             'and': 'C_ARITHMETIC',
              'or': 'C_ARITHMETIC',
             'not': 'C_ARITHMETIC',
@@ -161,9 +162,7 @@ class CodeWriter(object):
         self.write('D=M')
         self.write('@ENDBOOL{}'.format(self.bool_count))
         self.write('D;JEQ')
-        self.write('@SP')
-        self.write('A=M')
-        self.write('M=-1')
+        self.pushTrueOnStack()
         self.write('(ENDBOOL{})'.format(self.bool_count), code=False)
         self.increment_SP()
         self.bool_count += 1
@@ -174,40 +173,56 @@ class CodeWriter(object):
         self.write('D=M')
         self.write('@ENDBOOL{}'.format(self.bool_count))
         self.write('D;JEQ')
-        self.write('@SP')
-        self.write('A=M')
-        self.write('M=0') #if false
+        self.pushFalseOnStack() #if false
         self.write('@ENDSTATEMENT{}'.format(self.bool_count))
         self.write('0;JMP')
         self.write('(ENDBOOL{})'.format(self.bool_count), code=False) #if true
-        self.write('@SP')
-        self.write('A=M')
-        self.write('M=-1')
+        self.pushTrueOnStack()
         self.write('(ENDSTATEMENT{})'.format(self.bool_count), code=False)
         self.increment_SP()
         self.bool_count += 1
 
     def writeLogicalAnd(self, operation):
         self.write('@SP')
-        self.write('AM=M-1')
+        self.write('AM=M-1') #decrement sp
         self.write('D=M')
         self.write('@LAND_FALSE{}'.format(self.bool_count))
-        self.write('D;JEQ')
-        self.write('@SP')
+        self.write('D;JEQ') #if the first value is 0 (false), jump to land_false
+        self.write('@SP') #check next value
         self.write('A=M-1')
         self.write('D=M')
         self.write('@LAND_FALSE{}'.format(self.bool_count))
-        self.write('D;JEQ')
-        self.write('@SP')
-        self.write('AM=M-1')
-        self.write('M=-1')
+        self.write('D;JEQ') #if the second value is false, jump to land_false
+        self.pushTrueOnStack() #both are true, so store true on stack
         self.write('@LAND_CONT{}'.format(self.bool_count))
-        self.write('0;JMP')
+        self.write('0;JMP') #skip storing false on the stack, jump to land_cont
         self.write('(LAND_FALSE{})'.format(self.bool_count), code=False)
-        self.write('@SP')
-        self.write('A=M')
-        self.write('M=0')
+        self.pushFalseOnStack()
         self.write('(LAND_CONT{})'.format(self.bool_count), code=False)
+        self.increment_SP()
+
+
+    def writeLogicalOr(self, operation):
+        self.write('@SP')
+        self.write('AM=M-1') #decrement sp
+        self.write('D=M')
+        self.write('@LOR_NEXT{}'.format(self.bool_count))
+        self.write('D;JEQ') #if the first value is 0 (false), jump to second value
+        self.pushTrueOnStack()#otherwise, push true to stack
+        self.write('@LOR_CONT{}'.format(self.bool_count)) 
+        self.write('0;JMP') #jump to continue
+        self.write('(LOR_NEXT{})'.format(self.bool_count), code=False)
+        self.write('@SP') #check next value
+        self.write('A=M-1')
+        self.write('D=M')
+        self.write('@LOR_FALSE{}'.format(self.bool_count))
+        self.write('D;JEQ') #if the second value false, jump to lor_false
+        self.pushTrueOnStack() #second is true, so store true on stack
+        self.write('@LOR_CONT{}'.format(self.bool_count))
+        self.write('0;JMP') #skip storing false on the stack, jump to land_cont
+        self.write('(LOR_FALSE{})'.format(self.bool_count), code=False)
+        self.pushFalseOnStack()
+        self.write('(LOR_CONT{})'.format(self.bool_count), code=False)
         self.increment_SP()
     def write_arithmetic(self, operation):
         '''Apply operation to top of stack'''
@@ -589,6 +604,16 @@ class CodeWriter(object):
     def set_A_to_stack(self):
         self.write('@SP')
         self.write('A=M')
+        
+    def pushTrueOnStack(self):
+        self.write('@SP')
+        self.write('AM=M-1')
+        self.write('M=-1')
+    
+    def pushFalseOnStack(self):
+        self.write('@SP')
+        self.write('A=M')
+        self.write('M=0')
 
 
 class Main(object):
@@ -642,6 +667,11 @@ class Main(object):
             elif parser.command_type == 'C_LOGICALAND':
                 if(CodeWriter.checkIfHasOneElement(global_curr_inst) == True):
                     self.cw.writeLogicalAnd(parser.arg1)
+                else:
+                    self.cw.write("Command improperly formatted")
+            elif parser.command_type == 'C_LOGICALOR':
+                if(CodeWriter.checkIfHasOneElement(global_curr_inst) == True):
+                    self.cw.writeLogicalOr(parser.arg1)
                 else:
                     self.cw.write("Command improperly formatted")
             elif parser.command_type == 'C_BOOLEAN':

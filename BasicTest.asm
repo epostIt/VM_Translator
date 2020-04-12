@@ -1,26 +1,31 @@
 //////
 // BasicTest
-// eq
+// l-or
 @SP // 0
-M=M-1 // 1
-A=M // 2
-D=M // 3
-@SP // 4
-M=M-1 // 5
-@SP // 6
-A=M // 7
-D=M-D // 8
-@BOOL0 // 9
-D;JEQ // 10
-@SP // 11
-A=M // 12
-M=0 // 13
-@ENDBOOL0 // 14
-0;JMP // 15
-(BOOL0)
-@SP // 16
-A=M // 17
-M=-1 // 18
-(ENDBOOL0)
-@SP // 19
-M=M+1 // 20
+AM=M-1 // 1
+D=M // 2
+@LOR_NEXT0 // 3
+D;JEQ // 4
+@SP // 5
+AM=M-1 // 6
+M=-1 // 7
+@LOR_CONT0 // 8
+0;JMP // 9
+(LOR_NEXT0)
+@SP // 10
+A=M-1 // 11
+D=M // 12
+@LOR_FALSE0 // 13
+D;JEQ // 14
+@SP // 15
+AM=M-1 // 16
+M=-1 // 17
+@LOR_CONT0 // 18
+0;JMP // 19
+(LOR_FALSE0)
+@SP // 20
+A=M // 21
+M=0 // 22
+(LOR_CONT0)
+@SP // 23
+M=M+1 // 24
