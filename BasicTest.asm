@@ -1,33 +1,26 @@
 //////
 // BasicTest
-// l-xor
+// le
 @SP // 0
-AM=M-1 // 1
-D=M // 2
-@LXOR_SECOND_FALSE0 // 3
-D;JNE // 4
-@SP // 5
-A=M-1 // 6
-D=M // 7
-@LXOR_FALSE0 // 8
-D;JEQ // 9
-@LXOR_CONT0 // 10
-0;JMP // 11
-(LXOR_SECOND_FALSE0)
-@SP // 12
-A=M-1 // 13
-D=M // 14
-@LXOR_FALSE0 // 15
-D;JNE // 16
-@SP // 17
-AM=M-1 // 18
-M=-1 // 19
-@LXOR_CONT0 // 20
-0;JMP // 21
-(LXOR_FALSE0)
-@SP // 22
-A=M // 23
-M=0 // 24
-(LXOR_CONT0)
-@SP // 25
-M=M+1 // 26
+M=M-1 // 1
+A=M // 2
+D=M // 3
+@SP // 4
+M=M-1 // 5
+@SP // 6
+A=M // 7
+D=M-D // 8
+@BOOL0 // 9
+D;JLE // 10
+@SP // 11
+A=M // 12
+M=0 // 13
+@ENDBOOL0 // 14
+0;JMP // 15
+(BOOL0)
+@SP // 16
+A=M // 17
+M=-1 // 18
+(ENDBOOL0)
+@SP // 19
+M=M+1 // 20
