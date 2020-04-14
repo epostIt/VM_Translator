@@ -1,2 +1,1 @@
-push static 240 // one greater than max
-
+pop4 thing

@@ -9,7 +9,7 @@ kronovet@gmail.com
 import os
 import fileinput
 
-FILE_PATH = '/Users/susanpost/Desktop/My_VM_Translator/BasicTest.vm'
+FILE_PATH = '/Users/Elisabeth/Desktop/Compilers/VM_Translator/BasicTest.vm'
 
 COMMENT = '//'
 global_curr_inst = None
@@ -321,7 +321,7 @@ class CodeWriter(object):
             self.raise_unknown(operation)
         self.increment_SP()
 
-    def check_for_negative_index(index):
+    def check_for_negative_index(self, index):
         try:
             if(int(index) < 0):
                 return True
@@ -339,7 +339,7 @@ class CodeWriter(object):
             else:
                 return True
         if(segment == 'static'):
-            if(check_for_negative_index(index) == True):
+            if(self.check_for_negative_index(index) == True):
                 FileLine.printError(' '.join(global_curr_inst), "Static index out of range")
                 return False
             else:

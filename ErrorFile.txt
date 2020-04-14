@@ -74,3 +74,5 @@ ERROR:Unknown Memory segment - Line 40: pop aCap inYoButt
 
 ERROR:Index out of range - Line 45: push constant 42069420
 
+ERROR:Unknown Command - Line 1: pop4 thing
+
