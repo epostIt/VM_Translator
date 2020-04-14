@@ -182,3 +182,67 @@ A=M // 150
 M=D // 151
 // push static 240
 @ErrorTest.240 // 152
+D=M // 153
+@SP // 154
+A=M // 155
+M=D // 156
+@SP // 157
+M=M+1 // 158
+// pop static 240
+@ErrorTest.240 // 159
+D=A // 160
+@R13 // 161
+M=D // 162
+@SP // 163
+M=M-1 // 164
+A=M // 165
+D=M // 166
+@R13 // 167
+A=M // 168
+M=D // 169
+// push ram 32768
+@32768 // 170
+D=M // 171
+@SP // 172
+A=M // 173
+M=D // 174
+@SP // 175
+M=M+1 // 176
+// pop ram 32768
+@SP // 177
+AM=M-1 // 178
+D=M // 179
+@32768 // 180
+M=D // 181
+// label %okay%
+Invalid label name // 182
+// label (okay)
+Invalid label name // 183
+// label ok~ay
+Invalid label name // 184
+// goto 123dk
+Invalid label call // 185
+// if-goto YEET*&
+Invalid label call // 186
+// goto doesNotExist
+// if-goto doesNotExist
+// function %okay% 1
+Invalid function name // 187
+// function (okay) 1
+Invalid function name // 188
+// function 123dk 1
+Invalid function name // 189
+// function YEET*& 1
+Invalid function name // 190
+// call %okay% 1
+Invalid function name // 191
+// call (okay) 1
+Invalid function name // 192
+// call 123dk 1
+Invalid function name // 193
+// call YEET*& 1
+Invalid function name // 194
+// function okay -5
+Non-negative number was used // 195
+// call okay -5
+Non-negative number was used // 196

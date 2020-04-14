@@ -62,6 +62,7 @@ pop ram 32768  // one greater than max ram address
 
 label %okay%
 label (okay)
+label ok~ay
 goto 123dk
 if-goto YEET*&
 

@@ -8,8 +8,10 @@ kronovet@gmail.com
 
 import os
 import fileinput
+import re
 
-FILE_PATH = '/Users/Elisabeth/Desktop/Compilers/VM_Translator/BasicTest.vm'
+
+FILE_PATH = '/Users/Elisabeth/Desktop/Compilers/VM_Translator/ErrorTest.vm'
 
 COMMENT = '//'
 global_curr_inst = None
@@ -399,11 +401,21 @@ class CodeWriter(object):
         else:
             return True
 
+
     def checkIfValidFunctionOrLabelName(line):
         name = line[1]
+        regex = re.compile('[@_!#$%^&*()<>?/\|}{~]') 
         if(name[0].isdigit()):
             FileLine.printError(' '.join(global_curr_inst),"Invalid function name")
             return False
+        elif(name[0].isalpha() == False):
+            if(regex.search(name[0]) != None):
+                FileLine.printError(' '.join(global_curr_inst),"Invalid function name")
+                return False
+        if(regex.search(name) != None):
+            FileLine.printError(' '.join(global_curr_inst),"Invalid function name")
+            return False
+        
         else:
             return True
     
