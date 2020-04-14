@@ -1,0 +1,91 @@
+// ERROR: Unknown Command. Any unrecognized command should report this error.
+// No need to parse such a line any further.
+poopy label 2
+pop4  thing
+_pop_ thing
+push. okay
+
+and$
+$or
+
+// ERROR: Improperly formatted. Any command that does not adhere to the specified
+// format for that command should report this error. This can be limited to 
+// detecting the wrong number of elements (for instance, the ‘add’ command
+// should have just one while the ‘function’ command should have three).
+//  No need to parse such a line any further.  
+
+pop temp
+pop temp 5 okay
+push temp
+push
+function epic 5 5
+add 5 6
+sub 3
+and 1 1 1 1 1 1
+
+// ERROR: Unknown memory segment. Any ‘push’ or ‘pop’ command referring to an
+// unrecognized 
+
+push fake 69
+pop fake 69
+
+// ERROR: Illegal index. Any ‘push’ or ‘pop’ command that does not contain a
+// non-negative numeric constant for the index should report this error. 
+
+push constant -666
+pop local -1 
+push this -1 
+push that -1 
+pop constat NAN
+pop aCap inYoButt
+
+// ERROR: Index Out of Range. For any memory segment that has a known size, any
+// ‘push’ or ‘pop’ 
+
+push constant 42069420
+pop temp 8
+pop local 32768 // one greater than max ram address
+pop argument 32768 // one greater than max ram address
+
+push pointer 3 // one greater than max
+pop pointer 3  // one greater than max
+
+push static 240 // one greater than max
+pop static 240  // one greater than max
+
+push ram 32768 // one greater than max ram address
+pop ram 32768  // one greater than max ram address
+
+
+// ERROR: Illegal label. Any ‘label’, ‘goto’, or ‘if-goto’ command
+//  that references an illegal label should report this error. 
+
+label %okay%
+label (okay)
+goto 123dk
+if-goto YEET*&
+
+// ERROR: Unresolved label. Any ‘goto’ or ‘if-goto’ command that refers to a
+// label not defined within that function should report this error. 
+
+goto doesNotExist
+if-goto doesNotExist
+
+// ERROR: Illegal function name. Any ‘function’ or ‘call’ using an illegal 
+// function name should report this error. 
+
+function %okay% 1
+function (okay) 1
+function 123dk 1
+function YEET*& 1
+call %okay% 1
+call (okay) 1
+call 123dk 1
+call YEET*& 1
+
+// ERROR: Illegal count. Any ‘function’ or ‘call’ that does not use a
+// non-negative integer for the number of locals/args should report this error. 
+// Popping to the ‘constant’ memory segment 
+
+function okay -5
+call okay -5

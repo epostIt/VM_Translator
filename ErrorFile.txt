@@ -1,0 +1,76 @@
+ERROR:Unknown Command - Line 3: poopy label 2
+
+ERROR:Unknown Command - Line 5: _pop_ thing
+
+ERROR:Unknown Command - Line 6: push. okay
+
+ERROR:Unknown Command - Line 8: and$
+
+ERROR:Unknown Command - Line 9: $or
+
+ERROR:Improperly Formatted - Line 17: pop temp
+
+ERROR:Improperly Formatted - Line 18: pop temp 5 okay
+
+ERROR:Improperly Formatted - Line 19: push temp
+
+ERROR:Improperly Formatted - Line 20: push
+
+ERROR:Improperly Formatted - Line 21: function epic 5 5
+
+ERROR:Improperly Formatted - Line 22: add 5 6
+
+ERROR:Improperly Formatted - Line 23: sub 3
+
+ERROR:Improperly Formatted - Line 24: and 1 1 1 1 1 1
+
+ERROR:Unknown Memory segment - Line 29: push fake 69
+
+ERROR:Unknown Memory segment - Line 30: pop fake 69
+
+ERROR:Index out of range - Line 35: push constant -666
+
+ERROR:Unknown Memory segment - Line 39: pop constat NAN
+
+ERROR:Unknown Memory segment - Line 40: pop aCap inYoButt
+
+ERROR:Index out of range - Line 45: push constant 42069420
+
+ERROR:Unknown Command - Line 3: poopy label 2
+
+ERROR:Unknown Command - Line 5: _pop_ thing
+
+ERROR:Unknown Command - Line 6: push. okay
+
+ERROR:Unknown Command - Line 8: and$
+
+ERROR:Unknown Command - Line 9: $or
+
+ERROR:Improperly Formatted - Line 17: pop temp
+
+ERROR:Improperly Formatted - Line 18: pop temp 5 okay
+
+ERROR:Improperly Formatted - Line 19: push temp
+
+ERROR:Improperly Formatted - Line 20: push
+
+ERROR:Improperly Formatted - Line 21: function epic 5 5
+
+ERROR:Improperly Formatted - Line 22: add 5 6
+
+ERROR:Improperly Formatted - Line 23: sub 3
+
+ERROR:Improperly Formatted - Line 24: and 1 1 1 1 1 1
+
+ERROR:Unknown Memory segment - Line 29: push fake 69
+
+ERROR:Unknown Memory segment - Line 30: pop fake 69
+
+ERROR:Index out of range - Line 35: push constant -666
+
+ERROR:Unknown Memory segment - Line 39: pop constat NAN
+
+ERROR:Unknown Memory segment - Line 40: pop aCap inYoButt
+
+ERROR:Index out of range - Line 45: push constant 42069420
+

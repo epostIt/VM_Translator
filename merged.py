@@ -9,7 +9,7 @@ kronovet@gmail.com
 import os
 import fileinput
 
-FILE_PATH = '/Users/Elisabeth/Desktop/Compilers/VM_Translator/BasicTest.vm'
+FILE_PATH = '/Users/susanpost/Desktop/My_VM_Translator/BasicTest.vm'
 
 COMMENT = '//'
 global_curr_inst = None
@@ -25,6 +25,10 @@ class FileLine(object):
                 if (stringLookingFor == line):
                     if not FileLine.checkIfLineIsComment(line):
                         print("ERROR:" + error + " - Line " + str(fileinput.lineno()) + ": " + line )
+                        f = open("ErrorFile.txt", "a")
+                        f.write("ERROR:" + error + " - Line " +
+                                str(fileinput.lineno()) + ": " + line + "\n")
+                        f.close()
 
 
 # Create one per input file
@@ -317,6 +321,16 @@ class CodeWriter(object):
             self.raise_unknown(operation)
         self.increment_SP()
 
+    def check_for_negative_index(index):
+        try:
+            if(int(index) < 0):
+                return True
+            else:
+                return False
+        except:
+            return True
+
+
     def checkIfSegmentIsInRange(self, segment, index):
         if(segment == 'temp'):
             if(int(index) > 7 or int(index)<0):
@@ -581,15 +595,7 @@ class CodeWriter(object):
         self.write("This is an unknown memory segment ")
         FileLine.printError(str(' '.join(global_curr_inst)),"Unknown Memory segment")
 
-    def check_for_negative_index(index):
-        try:
-            if(int(index) < 0):
-                return True
-            else:
-                return False
-        except:
-            return True
-
+    
     def resolve_address(self, segment, index):
         
         '''Resolve address to A register'''
