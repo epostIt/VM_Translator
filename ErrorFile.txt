@@ -546,3 +546,27 @@ ERROR:Illegal count - Line 91: function okay -5
 
 ERROR:Illegal count - Line 92: call okay -5
 
+ERROR:Invalid function name - Line 1: label ok~ay
+
+ERROR:Invalid function name - Line 2: label h@i
+
+ERROR:Invalid function name - Line 1: label ok~ay
+
+ERROR:Invalid function name - Line 2: label h@i
+
+ERROR:Invalid function name - Line 1: label ok~ay
+
+ERROR:Invalid function name - Line 2: label h@i
+
+ERROR:Unknown Command - Line 6: Executes pop and push commands using the virtual memory segments.
+
+ERROR:Unknown Command - Line 14: this should throw
+
+ERROR:Unknown Command - Line 6: Executes pop and push commands using the virtual memory segments.
+
+ERROR:Unknown Command - Line 14: this should throw
+
+ERROR:Unknown Command - Line 6: Executes pop and push commands using the virtual memory segments.
+
+ERROR:Unknown Command - Line 14: this should throw
+
