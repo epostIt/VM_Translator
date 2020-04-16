@@ -1,2 +1,2 @@
-label ok~ay
-label h@i
+push constant 0B1111111
+push constant 0X7fff

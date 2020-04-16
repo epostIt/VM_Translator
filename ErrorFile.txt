@@ -570,3 +570,7 @@ ERROR:Unknown Command - Line 6: Executes pop and push commands using the virtual
 
 ERROR:Unknown Command - Line 14: this should throw
 
+ERROR:Invalid function name - Line 1: label ok~ay
+
+ERROR:Invalid function name - Line 2: label h@i
+

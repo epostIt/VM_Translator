@@ -11,7 +11,7 @@ import fileinput
 import re
 
 
-# FILE_PATH = '/Users/Elisabeth/Desktop/pj02_username/XVMTe/Test.vm'
+FILE_PATH = '/Users/Elisabeth/Desktop/Compilers/VM_Translator/BasicTest.vm'
 
 COMMENT = '//'
 global_curr_inst = None
@@ -427,7 +427,25 @@ class CodeWriter(object):
         else:
             return True
 
+    def checkIfIndexIsBinary(self,index):
+        if 'b' in index:
+            return str(int(index, 2))
+        elif 'B' in index:
+            return str(int(index, 2))
+        else:
+            return index
+
+    def checkIfIndexIsHex(self, index):
+        if 'x' in index:
+            return str(int(index, 16))
+        elif 'X' in index:
+            return str(int(index, 16))
+        else:
+            return index
+            
     def write_push_pop(self, command, segment, index):
+        index = self.checkIfIndexIsBinary(index)
+        index = self.checkIfIndexIsHex(index)
         self.resolve_address(segment, index)
         if command == 'C_PUSH': # load M[address] to D
             if segment == 'constant': #all ranges of segment are allowed, so no range checking needed
@@ -804,5 +822,5 @@ class Main(object):
 if __name__ == '__main__':
     import sys
 
-    FILE_PATH = sys.argv[1]
+    # FILE_PATH = sys.argv[1]
     Main(FILE_PATH)
